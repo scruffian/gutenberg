@@ -53,6 +53,7 @@ export class BlockSettingsMenu extends Component {
 			focus,
 			rootUID,
 			isHidden,
+			canEdit,
 		} = this.props;
 		const { isFocused } = this.state;
 		const blockUIDs = castArray( uids );
@@ -93,7 +94,7 @@ export class BlockSettingsMenu extends Component {
 						// Should this just use a DropdownMenu instead of a DropDown ?
 						<NavigableMenu className="editor-block-settings-menu__content">
 							<_BlockSettingsMenuFirstItem.Slot fillProps={ { onClose } } />
-							{ count === 1 && <BlockModeToggle uid={ firstBlockUID } onToggle={ onClose } role="menuitem" /> }
+							{ count === 1 && canEdit && <BlockModeToggle uid={ firstBlockUID } onToggle={ onClose } role="menuitem" /> }
 							{ count === 1 && <UnknownConverter uid={ firstBlockUID } role="menuitem" /> }
 							<BlockDuplicateButton uids={ uids } rootUID={ rootUID } role="menuitem" />
 							{ count === 1 && <SharedBlockConvertButton uid={ firstBlockUID } onToggle={ onClose } itemsRole="menuitem" /> }

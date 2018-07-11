@@ -511,6 +511,7 @@ export class BlockListBlock extends Component {
 					<BlockSettingsMenu
 						uids={ uid }
 						rootUID={ rootUID }
+						canEdit={ isValid && !!! error }
 						isHidden={ ! ( isHovered || isSelected ) || hoverArea !== 'right' }
 					/>
 				) }
