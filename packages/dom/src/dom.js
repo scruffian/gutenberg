@@ -7,10 +7,8 @@ import tinymce from 'tinymce';
 /**
  * Browser dependencies
  */
-const { getComputedStyle } = window;
+const { getComputedStyle, DOMRect } = window;
 const { TEXT_NODE, ELEMENT_NODE } = window.Node;
-
-const { DOMRect } = window;
 
 /**
  * Check whether the caret is horizontally at the edge of the container.
