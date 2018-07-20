@@ -12,7 +12,7 @@ import classnames from 'classnames';
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { Component, Fragment, renderToString } from '@wordpress/element';
-import { Button, Placeholder, Spinner, SandBox } from '@wordpress/components';
+import { Button, Placeholder, Spinner, SandBox, IconButton } from '@wordpress/components';
 import { createBlock } from '@wordpress/blocks';
 import {
 	BlockControls,
@@ -92,6 +92,7 @@ function getEmbedBlockSettings( { title, description, icon, category = 'embed', 
 				super( ...arguments );
 
 				this.doServerSideRender = this.doServerSideRender.bind( this );
+				this.switchBackToURLInput = this.switchBackToURLInput.bind( this );
 
 				this.state = {
 					html: '',
@@ -181,6 +182,10 @@ function getEmbedBlockSettings( { title, description, icon, category = 'embed', 
 					);
 			}
 
+			switchBackToURLInput() {
+				this.setState( { html: undefined } );
+			}
+
 			render() {
 				const { html, type, error, fetching } = this.state;
 				const { align, url, caption } = this.props.attributes;
@@ -193,6 +198,13 @@ function getEmbedBlockSettings( { title, description, icon, category = 'embed', 
 							value={ align }
 							onChange={ updateAlignment }
 						/>
+
+						{ ( html && <IconButton
+							className="components-toolbar__control"
+							label={ __( 'Edit URL' ) }
+							icon="edit"
+							onClick={ this.switchBackToURLInput }
+						/> ) }
 					</BlockControls>
 				);
 
