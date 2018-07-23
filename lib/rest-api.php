@@ -247,6 +247,22 @@ function gutenberg_add_target_schema_to_links( $response, $post, $request ) {
 			);
 		}
 	}
+	if ( 'edit' === $request['context'] && current_user_can( 'unfiltered_html' ) ) {
+		$new_links['https://api.w.org/action-unfiltered_html'] = array(
+			array(
+				'title'        => __( 'The current user can post HTML markup and JavaScript.', 'gutenberg' ),
+				'href'         => $orig_href,
+				'targetSchema' => array(
+					'type'       => 'object',
+					'properties' => array(
+						'unfiltered_html' => array(
+							'type' => 'boolean',
+						),
+					),
+				),
+			),
+		);
+	}
 	if ( 'edit' === $request['context'] ) {
 		if ( current_user_can( $post_type->cap->publish_posts ) ) {
 			$new_links['https://api.w.org/action-publish'] = array(
@@ -428,8 +444,11 @@ function gutenberg_ensure_wp_json_has_theme_supports( $response ) {
 		$site_info['theme_supports']['formats'] = $formats;
 	}
 	if ( ! array_key_exists( 'post-thumbnails', $site_info['theme_supports'] ) ) {
-		if ( get_theme_support( 'post-thumbnails' ) ) {
-			$site_info['theme_supports']['post-thumbnails'] = true;
+		$post_thumbnails = get_theme_support( 'post-thumbnails' );
+		if ( $post_thumbnails ) {
+			// $post_thumbnails can contain a nested array of post types.
+			// e.g. array( array( 'post', 'page' ) ).
+			$site_info['theme_supports']['post-thumbnails'] = is_array( $post_thumbnails ) ? $post_thumbnails[0] : true;
 		}
 	}
 	$response->set_data( $site_info );

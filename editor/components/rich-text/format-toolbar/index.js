@@ -18,7 +18,8 @@ import { prependHTTP } from '@wordpress/url';
  * Internal dependencies
  */
 import './style.scss';
-import UrlInput from '../../url-input';
+import PositionedAtSelection from './positioned-at-selection';
+import URLInput from '../../url-input';
 import { filterURLForDisplay } from '../../../utils/url';
 
 const FORMATTING_CONTROLS = [
@@ -175,7 +176,7 @@ class FormatToolbar extends Component {
 	}
 
 	render() {
-		const { formats, focusPosition, enabledControls = DEFAULT_CONTROLS, customControls = [], selectedNodeId } = this.props;
+		const { formats, enabledControls = DEFAULT_CONTROLS, customControls = [], selectedNodeId } = this.props;
 		const { linkValue, settingsVisible, opensInNewWindow } = this.state;
 		const isAddingLink = formats.link && formats.link.isAdding;
 
@@ -216,7 +217,7 @@ class FormatToolbar extends Component {
 
 				{ ( isAddingLink || formats.link ) && (
 					<Fill name="RichText.Siblings">
-						<div className="editor-format-toolbar__link-container" style={ { ...focusPosition } }>
+						<PositionedAtSelection className="editor-format-toolbar__link-container">
 							<Popover
 								position="bottom center"
 								focusOnMount={ isAddingLink ? 'firstElement' : false }
@@ -231,7 +232,7 @@ class FormatToolbar extends Component {
 										onKeyDown={ this.onKeyDown }
 										onSubmit={ this.submitLink }>
 										<div className="editor-format-toolbar__link-modal-line">
-											<UrlInput value={ linkValue } onChange={ this.onChangeLinkValue } />
+											<URLInput value={ linkValue } onChange={ this.onChangeLinkValue } />
 											<IconButton icon="editor-break" label={ __( 'Apply' ) } type="submit" />
 											<IconButton
 												className="editor-format-toolbar__link-settings-toggle"
@@ -275,7 +276,7 @@ class FormatToolbar extends Component {
 								/* eslint-enable jsx-a11y/no-static-element-interactions */
 								) }
 							</Popover>
-						</div>
+						</PositionedAtSelection>
 					</Fill>
 				) }
 			</div>

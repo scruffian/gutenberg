@@ -7,9 +7,10 @@ import { get } from 'lodash';
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { compose, Component } from '@wordpress/element';
+import { Component } from '@wordpress/element';
 import { IconButton, Spinner } from '@wordpress/components';
 import { withSelect } from '@wordpress/data';
+import { compose } from '@wordpress/compose';
 
 /**
  * Internal Dependencies
@@ -62,14 +63,14 @@ class PostPublishPanel extends Component {
 	}
 
 	render() {
-		const { isScheduled, onClose, forceIsDirty, forceIsSaving, PrePublishExtension, PostPublishExtension } = this.props;
+		const { isScheduled, onClose, forceIsDirty, forceIsSaving, PrePublishExtension, PostPublishExtension, ...additionalProps } = this.props;
 		const { loading, submitted } = this.state;
 		return (
-			<div className="editor-post-publish-panel">
+			<div className="editor-post-publish-panel" { ...additionalProps }>
 				<div className="editor-post-publish-panel__header">
 					{ ! submitted && (
 						<div className="editor-post-publish-panel__header-publish-button">
-							<PostPublishButton onSubmit={ this.onSubmit } forceIsDirty={ forceIsDirty } forceIsSaving={ forceIsSaving } />
+							<PostPublishButton focusOnMount={ true } onSubmit={ this.onSubmit } forceIsDirty={ forceIsDirty } forceIsSaving={ forceIsSaving } />
 						</div>
 					) }
 					{ submitted && (
@@ -78,6 +79,7 @@ class PostPublishPanel extends Component {
 						</div>
 					) }
 					<IconButton
+						aria-expanded={ true }
 						onClick={ onClose }
 						icon="no-alt"
 						label={ __( 'Close Publish Panel' ) }

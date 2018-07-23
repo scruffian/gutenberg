@@ -1,9 +1,22 @@
 /**
- * Node dependencies
+ * External dependencies
  */
+const glob = require( 'glob' ).sync;
 const path = require( 'path' );
 
 const root = path.resolve( __dirname, '../../' );
+
+// These are packages published to NPM as their own node modules.
+const npmReadyPackages = glob( 'packages/*/package.json' )
+	.map( ( fileName ) => fileName.split( '/' )[ 1 ] );
+
+// These are internal-only packages (for now), not yet published as standalone
+// node modules.
+const gutenbergPackages = [
+	'core-blocks',
+	'edit-post',
+	'editor',
+];
 
 module.exports = {
 	dataNamespaces: {
@@ -15,8 +28,8 @@ module.exports = {
 		},
 		'core/blocks': {
 			title: 'Block Types Data',
-			selectors: [ path.resolve( root, 'blocks/store/selectors.js' ) ],
-			actions: [ path.resolve( root, 'blocks/store/actions.js' ) ],
+			selectors: [ path.resolve( root, 'packages/blocks/src/store/selectors.js' ) ],
+			actions: [ path.resolve( root, 'packages/blocks/src/store/actions.js' ) ],
 		},
 		'core/editor': {
 			title: 'The Editor\'s Data',
@@ -28,21 +41,30 @@ module.exports = {
 			selectors: [ path.resolve( root, 'edit-post/store/selectors.js' ) ],
 			actions: [ path.resolve( root, 'edit-post/store/actions.js' ) ],
 		},
-		'core/viewport': {
-			title: 'The viewport module Data',
-			selectors: [ path.resolve( root, 'viewport/store/selectors.js' ) ],
-			actions: [ path.resolve( root, 'viewport/store/actions.js' ) ],
-		},
 		'core/nux': {
-			title: 'The NUX (New User Experience) module Data',
-			selectors: [ path.resolve( root, 'nux/store/selectors.js' ) ],
-			actions: [ path.resolve( root, 'nux/store/actions.js' ) ],
+			title: 'The NUX (New User Experience) Data',
+			selectors: [ path.resolve( root, 'packages/nux/src/store/selectors.js' ) ],
+			actions: [ path.resolve( root, 'packages/nux/src/store/actions.js' ) ],
+		},
+		'core/viewport': {
+			title: 'The Viewport Data',
+			selectors: [ path.resolve( root, 'packages/viewport/src/store/selectors.js' ) ],
+			actions: [ path.resolve( root, 'packages/viewport/src/store/actions.js' ) ],
 		},
 	},
-
 	dataDocsOutput: path.resolve( __dirname, '../data' ),
 
-	rootManifest: path.resolve( __dirname, '../root-manifest.json' ),
+	packages: {
+		...npmReadyPackages.reduce( ( memo, packageName ) => {
+			memo[ packageName ] = { isNpmReady: true };
+			return memo;
+		}, {} ),
+		...gutenbergPackages.reduce( ( memo, packageName ) => {
+			memo[ packageName ] = { isNpmReady: false };
+			return memo;
+		}, {} ),
+	},
 
+	rootManifest: path.resolve( __dirname, '../root-manifest.json' ),
 	manifestOutput: path.resolve( __dirname, '../manifest.json' ),
 };

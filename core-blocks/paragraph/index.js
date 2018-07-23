@@ -9,9 +9,7 @@ import { isFinite, find, omit } from 'lodash';
  */
 import { __ } from '@wordpress/i18n';
 import {
-	concatChildren,
 	Component,
-	compose,
 	Fragment,
 	RawHTML,
 } from '@wordpress/element';
@@ -31,7 +29,12 @@ import {
 	PanelColor,
 	RichText,
 } from '@wordpress/editor';
-import { createBlock, getPhrasingContentSchema } from '@wordpress/blocks';
+import {
+	createBlock,
+	getPhrasingContentSchema,
+	children,
+} from '@wordpress/blocks';
+import { compose } from '@wordpress/compose';
 
 /**
  * Internal dependencies
@@ -78,10 +81,12 @@ const FONT_SIZES = [
 class ParagraphBlock extends Component {
 	constructor() {
 		super( ...arguments );
+
 		this.onReplace = this.onReplace.bind( this );
 		this.toggleDropCap = this.toggleDropCap.bind( this );
 		this.getFontSize = this.getFontSize.bind( this );
 		this.setFontSize = this.setFontSize.bind( this );
+		this.splitBlock = this.splitBlock.bind( this );
 	}
 
 	onReplace( blocks ) {
@@ -137,11 +142,53 @@ class ParagraphBlock extends Component {
 		} );
 	}
 
+	/**
+	 * Split handler for RichText value, namely when content is pasted or the
+	 * user presses the Enter key.
+	 *
+	 * @param {?Array}     before Optional before value, to be used as content
+	 *                            in place of what exists currently for the
+	 *                            block. If undefined, the block is deleted.
+	 * @param {?Array}     after  Optional after value, to be appended in a new
+	 *                            paragraph block to the set of blocks passed
+	 *                            as spread.
+	 * @param {...WPBlock} blocks Optional blocks inserted between the before
+	 *                            and after value blocks.
+	 */
+	splitBlock( before, after, ...blocks ) {
+		const {
+			attributes,
+			insertBlocksAfter,
+			setAttributes,
+			onReplace,
+		} = this.props;
+
+		if ( after ) {
+			// Append "After" content as a new paragraph block to the end of
+			// any other blocks being inserted after the current paragraph.
+			blocks.push( createBlock( name, { content: after } ) );
+		}
+
+		if ( blocks.length && insertBlocksAfter ) {
+			insertBlocksAfter( blocks );
+		}
+
+		const { content } = attributes;
+		if ( ! before ) {
+			// If before content is omitted, treat as intent to delete block.
+			onReplace( [] );
+		} else if ( content !== before ) {
+			// Only update content if it has in-fact changed. In case that user
+			// has created a new paragraph at end of an existing one, the value
+			// of before will be strictly equal to the current content.
+			setAttributes( { content: before } );
+		}
+	}
+
 	render() {
 		const {
 			attributes,
 			setAttributes,
-			insertBlocksAfter,
 			mergeBlocks,
 			onReplace,
 			className,
@@ -204,10 +251,10 @@ class ParagraphBlock extends Component {
 						textColor={ textColor.value }
 						backgroundColor={ backgroundColor.value }
 						{ ...{
+							fontSize,
 							fallbackBackgroundColor,
 							fallbackTextColor,
 						} }
-						isLargeText={ fontSize >= 18 }
 					/>
 				</InspectorControls>
 				<RichText
@@ -219,8 +266,8 @@ class ParagraphBlock extends Component {
 						[ textColor.class ]: textColor.class,
 					} ) }
 					style={ {
-						backgroundColor: backgroundColor.class ? undefined : backgroundColor.value,
-						color: textColor.class ? undefined : textColor.value,
+						backgroundColor: backgroundColor.value,
+						color: textColor.value,
 						fontSize: fontSize ? fontSize + 'px' : undefined,
 						textAlign: align,
 					} }
@@ -230,22 +277,7 @@ class ParagraphBlock extends Component {
 							content: nextContent,
 						} );
 					} }
-					onSplit={ insertBlocksAfter ?
-						( before, after, ...blocks ) => {
-							if ( after ) {
-								blocks.push( createBlock( name, { content: after } ) );
-							}
-
-							insertBlocksAfter( blocks );
-
-							if ( before ) {
-								setAttributes( { content: before } );
-							} else {
-								onReplace( [] );
-							}
-						} :
-						undefined
-					}
+					onSplit={ this.splitBlock }
 					onMerge={ mergeBlocks }
 					onReplace={ this.onReplace }
 					onRemove={ () => onReplace( [] ) }
@@ -441,7 +473,10 @@ export const settings = {
 
 	merge( attributes, attributesToMerge ) {
 		return {
-			content: concatChildren( attributes.content, attributesToMerge.content ),
+			content: children.concat(
+				attributes.content,
+				attributesToMerge.content
+			),
 		};
 	},
 

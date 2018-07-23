@@ -8,9 +8,10 @@ import classnames from 'classnames';
  */
 import { __ } from '@wordpress/i18n';
 import { isUnmodifiedDefaultBlock } from '@wordpress/blocks';
-import { Component, compose } from '@wordpress/element';
-import { ifCondition, IconButton } from '@wordpress/components';
+import { Component } from '@wordpress/element';
+import { IconButton } from '@wordpress/components';
 import { withSelect, withDispatch } from '@wordpress/data';
+import { ifCondition, compose } from '@wordpress/compose';
 
 class BlockInsertionPoint extends Component {
 	constructor() {
@@ -27,7 +28,6 @@ class BlockInsertionPoint extends Component {
 	onFocusInserter( event ) {
 		// We stop propagation of the focus event to avoid selecting the current block
 		// While we're trying to insert a new block
-		// We also attach this to onMouseDown, due to a difference in behavior in Firefox and Safari, where buttons don't receive focus: https://gist.github.com/cvrebert/68659d0333a578d75372
 		event.stopPropagation();
 
 		this.setState( {
@@ -42,8 +42,8 @@ class BlockInsertionPoint extends Component {
 	}
 
 	onClick() {
-		const { layout, rootUID, index, ...props } = this.props;
-		props.insertDefaultBlock( { layout }, rootUID, index );
+		const { layout, rootClientId, index, ...props } = this.props;
+		props.insertDefaultBlock( { layout }, rootClientId, index );
 		props.startTyping();
 		this.onBlurInserter();
 		if ( props.onInsert ) {
@@ -66,7 +66,6 @@ class BlockInsertionPoint extends Component {
 							onClick={ this.onClick }
 							label={ __( 'Insert block' ) }
 							onFocus={ this.onFocusInserter }
-							onMouseDown={ this.onFocusInserter }
 							onBlur={ this.onBlurInserter }
 						/>
 					</div>
@@ -76,34 +75,38 @@ class BlockInsertionPoint extends Component {
 	}
 }
 export default compose(
-	withSelect( ( select, { uid, rootUID, canShowInserter } ) => {
+	withSelect( ( select, { clientId, rootClientId, canShowInserter } ) => {
 		const {
+			canInsertBlockType,
 			getBlockIndex,
 			getBlockInsertionPoint,
 			getBlock,
 			isBlockInsertionPointVisible,
 			isTyping,
-			getEditorSettings,
 		} = select( 'core/editor' );
-		const blockIndex = uid ? getBlockIndex( uid, rootUID ) : -1;
+		const {
+			getDefaultBlockName,
+		} = select( 'core/blocks' );
+		const blockIndex = clientId ? getBlockIndex( clientId, rootClientId ) : -1;
 		const insertIndex = blockIndex;
 		const insertionPoint = getBlockInsertionPoint();
-		const block = uid ? getBlock( uid ) : null;
+		const block = clientId ? getBlock( clientId ) : null;
 		const showInsertionPoint = (
 			isBlockInsertionPointVisible() &&
 			insertionPoint.index === insertIndex &&
-			insertionPoint.rootUID === rootUID &&
+			insertionPoint.rootClientId === rootClientId &&
 			( ! block || ! isUnmodifiedDefaultBlock( block ) )
 		);
 
+		const defaultBlockName = getDefaultBlockName();
 		return {
-			templateLock: getEditorSettings().templateLock,
+			canInsertDefaultBlock: canInsertBlockType( defaultBlockName, rootClientId ),
 			showInserter: ! isTyping() && canShowInserter,
 			index: insertIndex,
 			showInsertionPoint,
 		};
 	} ),
-	ifCondition( ( { templateLock } ) => ! templateLock ),
+	ifCondition( ( { canInsertDefaultBlock } ) => canInsertDefaultBlock ),
 	withDispatch( ( dispatch ) => {
 		const { insertDefaultBlock, startTyping } = dispatch( 'core/editor' );
 		return {
