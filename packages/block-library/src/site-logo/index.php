@@ -26,3 +26,19 @@ function register_block_core_site_logo() {
 	);
 }
 add_action( 'init', 'register_block_core_site_logo' );
+
+function register_block_core_site_logo_setting() {
+	register_setting(
+		'general',
+		'sitelogo',
+		array(
+			'show_in_rest' => array(
+				'name' => 'sitelogo',
+			),
+			'type'         => 'string',
+			'description'  => __( 'Site logo.' ),
+		)
+	);
+}
+
+add_action( 'rest_api_init', 'register_block_core_site_logo_setting', 10 );
