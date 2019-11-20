@@ -11,7 +11,10 @@
  * @return string The render.
  */
 function render_block_core_site_logo() {
-	return sprintf( '<h1>%s</h1>', get_option( 'sitelogo' ) );
+	$site_logo = wp_get_attachment_image_src( get_option( 'sitelogo' ), 'thumbnail' );
+	return '<img src="' . $site_logo[0] . '"
+		width="'. $site_logo[1] .'"
+		height="'. $site_logo[2] . '" />';
 }
 
 /**
