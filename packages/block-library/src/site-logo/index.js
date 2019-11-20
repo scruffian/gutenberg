@@ -15,6 +15,12 @@ export { metadata, name };
 
 export const settings = {
 	title: __( 'Site Logo' ),
+	description: __( 'Show a site logo' ),
 	icon,
 	edit,
+	example: {
+		innerBlocks: [
+			{ name: 'core/image', attributes: { url: 'https://wordpress.org' } },
+		],
+	},
 };
