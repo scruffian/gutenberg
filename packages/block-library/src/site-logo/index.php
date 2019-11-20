@@ -11,7 +11,7 @@
  * @return string The render.
  */
 function render_block_core_site_logo() {
-	return sprintf( '<h1>%s</h1>', get_bloginfo( 'name' ) );
+	return sprintf( '<h1>%s</h1>', get_option( 'sitelogo' ) );
 }
 
 /**
