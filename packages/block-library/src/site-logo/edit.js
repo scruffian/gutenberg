@@ -5,11 +5,10 @@ import {
 	useEntityProp,
 	__experimentalUseEntitySaving,
 } from '@wordpress/core-data';
-import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { MediaPlaceholder, RichText } from '@wordpress/block-editor';
 
-function onSelectLogo( setAttributes, setLogo, save ) {
+function onSelectLogo( setAttributes, setLogo ) {
 	return ( media ) => {
 		if ( ! media || ! media.url ) {
 			setAttributes( { url: undefined, id: undefined } );
@@ -22,31 +21,25 @@ function onSelectLogo( setAttributes, setLogo, save ) {
 		} );
 
 		setLogo( media.id.toString() );
-		save();
 	};
 }
 
 export default function SiteTitleEdit( { setAttributes } ) {
 	const [ logo, setLogo ] = useEntityProp( 'root', 'site', 'sitelogo' );
-	const [ isDirty, isSaving, save ] = __experimentalUseEntitySaving(
+	const [ isDirty, , save ] = __experimentalUseEntitySaving(
 		'root',
 		'site',
 		'sitelogo'
 	);
 
-	const onSelectMedia = onSelectLogo( setAttributes, setLogo, save );
+	if ( isDirty ) {
+		save();
+	}
+
+	const onSelectMedia = onSelectLogo( setAttributes, setLogo );
 
 	return (
 		<>
-			<Button
-				isPrimary
-				className="wp-block-site-title__save-button"
-				disabled={ ! isDirty || ! logo }
-				isBusy={ isSaving }
-				onClick={ save }
-			>
-				{ __( 'Update' ) }
-			</Button>
 			<MediaPlaceholder
 				onSelect={ onSelectMedia }
 			/>
