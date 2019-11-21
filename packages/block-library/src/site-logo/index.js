@@ -18,9 +18,15 @@ export const settings = {
 	description: __( 'Show a site logo' ),
 	icon,
 	edit,
-	example: {
-		innerBlocks: [
-			{ name: 'core/image', attributes: { url: 'https://wordpress.org' } },
-		],
+	attributes: {
+		id: {
+			type: 'string',
+		},
+		url: {
+			type: 'string',
+		},
+		align: {
+			type: 'string',
+		},
 	},
 };
