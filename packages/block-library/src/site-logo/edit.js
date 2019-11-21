@@ -5,8 +5,11 @@ import {
 	useEntityProp,
 	__experimentalUseEntitySaving,
 } from '@wordpress/core-data';
-import { __ } from '@wordpress/i18n';
-import { MediaPlaceholder, RichText } from '@wordpress/block-editor';
+
+/**
+ * Internal dependencies
+ */
+import { ImageEdit, composed } from '../image/edit';
 
 function onSelectLogo( setAttributes, setLogo ) {
 	return ( media ) => {
@@ -24,7 +27,7 @@ function onSelectLogo( setAttributes, setLogo ) {
 	};
 }
 
-export default function SiteTitleEdit( { setAttributes } ) {
+function LogoEditWithEntity( props ) {
 	const [ logo, setLogo ] = useEntityProp( 'root', 'site', 'sitelogo' );
 	const [ isDirty, , save ] = __experimentalUseEntitySaving(
 		'root',
@@ -36,20 +39,19 @@ export default function SiteTitleEdit( { setAttributes } ) {
 		save();
 	}
 
-	const onSelectMedia = onSelectLogo( setAttributes, setLogo );
-
 	return (
-		<>
-			<MediaPlaceholder
-				onSelect={ onSelectMedia }
-			/>
-			<RichText
-				tagName="h1"
-				placeholder={ __( 'Site Logo' ) }
-				value={ logo }
-				onChange={ setLogo }
-				allowedFormats={ [] }
-			/>
-		</>
+		<LogoEdit mediaHandler={ onSelectLogo( props.setAttributes, setLogo ) } logo={ logo } { ...props } />
 	);
 }
+class LogoEdit extends ImageEdit {
+	constructor( props ) {
+		super( props );
+		this.onSelectImage = this.onSelectImage.bind( this );
+	}
+
+	onSelectImage( media ) {
+		super.onSelectImage( media );
+		this.props.mediaHandler( media );
+	}
+}
+export default composed( LogoEditWithEntity );

@@ -948,7 +948,7 @@ export class ImageEdit extends Component {
 	}
 }
 
-export default compose( [
+export const composed = compose( [
 	withDispatch( ( dispatch ) => {
 		const { toggleSelection } = dispatch( 'core/block-editor' );
 
@@ -978,4 +978,6 @@ export default compose( [
 	} ),
 	withViewportMatch( { isLargeViewport: 'medium' } ),
 	withNotices,
-] )( ImageEdit );
+] );
+
+export default composed( ImageEdit );
