@@ -21,14 +21,32 @@ function render_block_core_site_logo() {
  * Registers the `core/site-logo` block on the server.
  */
 function register_block_core_site_logo() {
-	register_block_type(
-		'core/site-logo',
-		array(
-			'render_callback' => 'render_block_core_site_logo',
-		)
-	);
+	if ( gutenberg_is_experiment_enabled( 'gutenberg-full-site-editing' ) ) {
+		register_block_type(
+			'core/site-logo',
+			array(
+				'render_callback' => 'render_block_core_site_logo',
+			)
+		);
+		add_filter( 'pre_set_theme_mod_custom_logo', 'sync_site_logo_to_theme_mod' );
+		add_filter( 'theme_mod_custom_logo', 'override_custom_logo_theme_mod' );
+	}
 }
 add_action( 'init', 'register_block_core_site_logo' );
+
+function override_custom_logo_theme_mod( $custom_logo ) {
+	$sitelogo = get_option( 'sitelogo' );
+	
+	return false === $sitelogo ? $custom_logo : $sitelogo; 
+}
+
+
+function sync_site_logo_to_theme_mod( $custom_logo ) {
+	if ( $custom_logo ) {
+		update_option( 'sitelogo', $custom_logo );
+	}
+	return $custom_logo;
+}
 
 function register_block_core_site_logo_setting() {
 	register_setting(
