@@ -3,7 +3,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
-import { MediaPlaceholderSlot } from '@wordpress/block-editor';
 
 /**
  * Internal dependencies
@@ -27,26 +26,20 @@ export const settings = {
 	},
 };
 
-const MediaPlaceholderAddLogoButton = () => {
-	return (
-		<MediaPlaceholderSlot>
-			{ ( props ) => {
-				if ( props.name !== name ) {
-					return null;
-				}
+function replaceMediaPlaceholder( MediaPlaceholder ) {
+	return function( props ) {
+		const addLogo = ( <Button href="https://looka.com">Add Logo</Button> );
+		return (
+			<div>
+				<MediaPlaceholder { ...props } />
+				{ props.name === name ? addLogo : null }
+			</div>
+		);
+	};
+}
 
-				return (
-					<Button
-						isLarge
-						href="https://test.com"
-					>
-						{ __( 'Create A Logo' ) }
-					</Button>
-				);
-			} }
-		</MediaPlaceholderSlot>
-	);
-};
-
-const registerPlugin = wp.plugins.registerPlugin;
-registerPlugin( 'media-placeholder-add-logo-button', { render: MediaPlaceholderAddLogoButton } );
+wp.hooks.addFilter(
+	'editor.MediaPlaceholder',
+	'my-plugin/replace-media-placeholder',
+	replaceMediaPlaceholder
+);

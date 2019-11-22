@@ -358,7 +358,7 @@ export class MediaPlaceholder extends Component {
 									</IconButton>
 									{ mediaLibraryButton }
 									{ this.renderUrlSelectionUI() }
-									<MediaPlaceholderSlot.Slot fillProps={ this.props } />
+									<MediaPlaceholderSlot.Slot className={ this.props.name } bubblesVirtually fillProps={ this.props } />
 									{ this.renderCancelLink() }
 								</>
 							);
@@ -388,7 +388,7 @@ export class MediaPlaceholder extends Component {
 					</FormFileUpload>
 					{ mediaLibraryButton }
 					{ this.renderUrlSelectionUI() }
-					<MediaPlaceholderSlot.Slot fillProps={ this.props } />
+					<MediaPlaceholderSlot.Slot className={ this.props.name } bubblesVirtually fillProps={ this.props } />
 					{ this.renderCancelLink() }
 				</>
 			);
