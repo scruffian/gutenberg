@@ -19,12 +19,6 @@ export const settings = {
 	icon,
 	edit,
 	attributes: {
-		id: {
-			type: 'string',
-		},
-		url: {
-			type: 'string',
-		},
 		align: {
 			type: 'string',
 		},

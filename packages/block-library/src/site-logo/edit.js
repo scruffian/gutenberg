@@ -5,6 +5,7 @@ import {
 	useEntityProp,
 	__experimentalUseEntitySaving,
 } from '@wordpress/core-data';
+import { useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -34,13 +35,18 @@ function LogoEditWithEntity( props ) {
 		'site',
 		'sitelogo'
 	);
+	const url = useSelect(
+		( select ) => {
+			const mediaItem = select( 'core' ).getEntityRecord( 'root', 'media', logo );
+			return mediaItem && mediaItem.source_url;
+		}, [ logo ] );
 
 	if ( isDirty ) {
 		save();
 	}
 
 	return (
-		<LogoEdit mediaHandler={ onSelectLogo( props.setAttributes, setLogo ) } logo={ logo } { ...props } />
+		<LogoEdit mediaHandler={ onSelectLogo( props.setAttributes, setLogo ) } { ...props } attributes={ { ...props.attributes, id: logo, url } } />
 	);
 }
 class LogoEdit extends ImageEdit {
