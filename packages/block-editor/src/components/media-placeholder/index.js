@@ -33,6 +33,7 @@ import deprecated from '@wordpress/deprecated';
 import MediaUpload from '../media-upload';
 import MediaUploadCheck from '../media-upload/check';
 import URLPopover from '../url-popover';
+import MediaPlaceholderSlot from './slot';
 
 const InsertFromURLPopover = ( { src, onChange, onSubmit, onClose } ) => (
 	<URLPopover onClose={ onClose }>
@@ -357,6 +358,7 @@ export class MediaPlaceholder extends Component {
 									</IconButton>
 									{ mediaLibraryButton }
 									{ this.renderUrlSelectionUI() }
+									<MediaPlaceholderSlot.Slot fillProps={ this.props } />
 									{ this.renderCancelLink() }
 								</>
 							);
@@ -386,6 +388,7 @@ export class MediaPlaceholder extends Component {
 					</FormFileUpload>
 					{ mediaLibraryButton }
 					{ this.renderUrlSelectionUI() }
+					<MediaPlaceholderSlot.Slot fillProps={ this.props } />
 					{ this.renderCancelLink() }
 				</>
 			);

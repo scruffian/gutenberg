@@ -2,6 +2,8 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { Button } from '@wordpress/components';
+import { MediaPlaceholderSlot } from '@wordpress/block-editor';
 
 /**
  * Internal dependencies
@@ -24,3 +26,27 @@ export const settings = {
 		},
 	},
 };
+
+const MediaPlaceholderAddLogoButton = () => {
+	return (
+		<MediaPlaceholderSlot>
+			{ ( props ) => {
+				if ( props.name !== name ) {
+					return null;
+				}
+
+				return (
+					<Button
+						isLarge
+						href="https://test.com"
+					>
+						{ __( 'Create A Logo' ) }
+					</Button>
+				);
+			} }
+		</MediaPlaceholderSlot>
+	);
+};
+
+const registerPlugin = wp.plugins.registerPlugin;
+registerPlugin( 'media-placeholder-add-logo-button', { render: MediaPlaceholderAddLogoButton } );

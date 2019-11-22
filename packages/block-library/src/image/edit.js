@@ -577,6 +577,7 @@ export class ImageEdit extends Component {
 			isSelected,
 			className,
 			maxWidth,
+			name,
 			noticeUI,
 			isRTL,
 			onResizeStart,
@@ -666,6 +667,7 @@ export class ImageEdit extends Component {
 		const mediaPlaceholder = (
 			<MediaPlaceholder
 				icon={ <BlockIcon icon={ icon } /> }
+				name={ name }
 				className={ className }
 				labels={ labels }
 				onSelect={ this.onSelectImage }

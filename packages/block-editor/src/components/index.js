@@ -28,6 +28,7 @@ export { default as InspectorAdvancedControls } from './inspector-advanced-contr
 export { default as InspectorControls } from './inspector-controls';
 export { default as __experimentalLinkControl } from './link-control';
 export { default as MediaPlaceholder } from './media-placeholder';
+export { default as MediaPlaceholderSlot } from './media-placeholder/slot';
 export { default as MediaUpload } from './media-upload';
 export { default as MediaUploadCheck } from './media-upload/check';
 export { default as PanelColorSettings } from './panel-color-settings';
