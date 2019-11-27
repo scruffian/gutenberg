@@ -40,7 +40,6 @@ function override_custom_logo_theme_mod( $custom_logo ) {
 	return false === $sitelogo ? $custom_logo : $sitelogo; 
 }
 
-
 function sync_site_logo_to_theme_mod( $custom_logo ) {
 	if ( $custom_logo ) {
 		update_option( 'sitelogo', $custom_logo );

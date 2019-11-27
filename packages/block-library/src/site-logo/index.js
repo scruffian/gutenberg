@@ -2,7 +2,6 @@
  * WordPress dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -25,21 +24,3 @@ export const settings = {
 		},
 	},
 };
-
-function replaceMediaPlaceholder( MediaPlaceholder ) {
-	return function( props ) {
-		const addLogo = ( <Button href="https://looka.com">Add Logo</Button> );
-		return (
-			<div>
-				<MediaPlaceholder { ...props } />
-				{ props.name === name ? addLogo : null }
-			</div>
-		);
-	};
-}
-
-wp.hooks.addFilter(
-	'editor.MediaPlaceholder',
-	'my-plugin/replace-media-placeholder',
-	replaceMediaPlaceholder
-);
