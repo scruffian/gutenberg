@@ -844,27 +844,14 @@ class WP_Theme_JSON_Resolver_Gutenberg {
 
 		$theme_json_data = $theme_json->get_raw_data();
 
-		// Using the same file convention when registering web fonts. See: WP_Font_Face_Resolver:: to_theme_file_uri.
-		$placeholder = 'file:./';
-
 		// Top level styles.
 		$background_image_url = $theme_json_data['styles']['background']['backgroundImage']['url'] ?? null;
-		if (
-			isset( $background_image_url ) &&
-			is_string( $background_image_url ) &&
-			// Skip if the src doesn't start with the placeholder, as there's nothing to replace.
-			str_starts_with( $background_image_url, $placeholder ) ) {
-				$file_type          = wp_check_filetype( $background_image_url );
-				$src_url            = str_replace( $placeholder, '', $background_image_url );
-				$resolved_theme_uri = array(
-					'name'   => $background_image_url,
-					'href'   => sanitize_url( get_theme_file_uri( $src_url ) ),
-					'target' => 'styles.background.backgroundImage.url',
-				);
-				if ( isset( $file_type['type'] ) ) {
-					$resolved_theme_uri['type'] = $file_type['type'];
-				}
-				$resolved_theme_uris[] = $resolved_theme_uri;
+		$resolved_theme_uri   = static::get_resolved_theme_uri(
+			$background_image_url,
+			'styles.background.backgroundImage.url'
+		);
+		if ( null !== $resolved_theme_uri ) {
+			$resolved_theme_uris[] = $resolved_theme_uri;
 		}
 
 		// Block styles.
@@ -874,27 +861,49 @@ class WP_Theme_JSON_Resolver_Gutenberg {
 					continue;
 				}
 				$background_image_url = $block_styles['background']['backgroundImage']['url'] ?? null;
-				if (
-					isset( $background_image_url ) &&
-					is_string( $background_image_url ) &&
-					// Skip if the src doesn't start with the placeholder, as there's nothing to replace.
-					str_starts_with( $background_image_url, $placeholder ) ) {
-					$file_type          = wp_check_filetype( $background_image_url );
-					$src_url            = str_replace( $placeholder, '', $background_image_url );
-					$resolved_theme_uri = array(
-						'name'   => $background_image_url,
-						'href'   => sanitize_url( get_theme_file_uri( $src_url ) ),
-						'target' => "styles.blocks.{$block_name}.background.backgroundImage.url",
-					);
-					if ( isset( $file_type['type'] ) ) {
-						$resolved_theme_uri['type'] = $file_type['type'];
-					}
+				$resolved_theme_uri   = static::get_resolved_theme_uri(
+					$background_image_url,
+					"styles.blocks.{$block_name}.background.backgroundImage.url"
+				);
+				if ( null !== $resolved_theme_uri ) {
 					$resolved_theme_uris[] = $resolved_theme_uri;
 				}
 			}
 		}
 
 		return $resolved_theme_uris;
+	}
+
+	/**
+	 * Resolves a theme file URI for a single theme.json path.
+	 *
+	 * @since 7.0.0
+	 *
+	 * @param mixed  $theme_file_uri Theme file URI candidate.
+	 * @param string $target         Theme.json path where the URI is used.
+	 * @return array|null Resolved theme URI metadata, or null if the URI cannot be resolved.
+	 */
+	private static function get_resolved_theme_uri( $theme_file_uri, $target ) {
+		// Using the same file convention when registering web fonts. See: WP_Font_Face_Resolver::to_theme_file_uri.
+		$placeholder = 'file:./';
+
+		if ( ! is_string( $theme_file_uri ) || ! str_starts_with( $theme_file_uri, $placeholder ) ) {
+			return null;
+		}
+
+		$file_type          = wp_check_filetype( $theme_file_uri );
+		$src_url            = str_replace( $placeholder, '', $theme_file_uri );
+		$resolved_theme_uri = array(
+			'name'   => $theme_file_uri,
+			'href'   => sanitize_url( get_theme_file_uri( $src_url ) ),
+			'target' => $target,
+		);
+
+		if ( isset( $file_type['type'] ) ) {
+			$resolved_theme_uri['type'] = $file_type['type'];
+		}
+
+		return $resolved_theme_uri;
 	}
 
 	/**
@@ -944,17 +953,12 @@ class WP_Theme_JSON_Resolver_Gutenberg {
 			$variation_name = $variation['slug'] ?? _wp_to_kebab_case( $variation['title'] );
 
 			foreach ( $variation['blockTypes'] as $block_type ) {
-				// First, override partial styles with any top-level styles.
-				$top_level_data = $data['styles']['variations'][ $variation_name ] ?? array();
-				if ( ! empty( $top_level_data ) ) {
-					$variation['styles'] = array_replace_recursive( $variation['styles'], $top_level_data );
-				}
-
-				// Then, override styles so far with any block-level styles.
-				$block_level_data = $data['styles']['blocks'][ $block_type ]['variations'][ $variation_name ] ?? array();
-				if ( ! empty( $block_level_data ) ) {
-					$variation['styles'] = array_replace_recursive( $variation['styles'], $block_level_data );
-				}
+				$variation['styles'] = static::merge_block_style_variation_data(
+					$data,
+					$block_type,
+					$variation_name,
+					$variation['styles']
+				);
 
 				$path = array( 'styles', 'blocks', $block_type, 'variations', $variation_name );
 				_wp_array_set( $data, $path, $variation['styles'] );
@@ -982,17 +986,12 @@ class WP_Theme_JSON_Resolver_Gutenberg {
 					continue;
 				}
 
-				// First, override registry styles with any top-level styles.
-				$top_level_data = $data['styles']['variations'][ $variation_name ] ?? array();
-				if ( ! empty( $top_level_data ) ) {
-					$variation['style_data'] = array_replace_recursive( $variation['style_data'], $top_level_data );
-				}
-
-				// Then, override styles so far with any block-level styles.
-				$block_level_data = $data['styles']['blocks'][ $block_type ]['variations'][ $variation_name ] ?? array();
-				if ( ! empty( $block_level_data ) ) {
-					$variation['style_data'] = array_replace_recursive( $variation['style_data'], $block_level_data );
-				}
+				$variation['style_data'] = static::merge_block_style_variation_data(
+					$data,
+					$block_type,
+					$variation_name,
+					$variation['style_data']
+				);
 
 				$path = array( 'styles', 'blocks', $block_type, 'variations', $variation_name );
 				_wp_array_set( $data, $path, $variation['style_data'] );
@@ -1000,5 +999,32 @@ class WP_Theme_JSON_Resolver_Gutenberg {
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Merges a block style variation with theme.json variation overrides.
+	 *
+	 * @since 7.0.0
+	 *
+	 * @param array  $data           Array following the theme.json specification.
+	 * @param string $block_type     Block type name.
+	 * @param string $variation_name Block style variation name.
+	 * @param array  $variation_data Block style variation data to merge.
+	 * @return array Merged block style variation data.
+	 */
+	private static function merge_block_style_variation_data( $data, $block_type, $variation_name, $variation_data ) {
+		// First, override sourced styles with any top-level styles.
+		$top_level_data = $data['styles']['variations'][ $variation_name ] ?? array();
+		if ( ! empty( $top_level_data ) ) {
+			$variation_data = array_replace_recursive( $variation_data, $top_level_data );
+		}
+
+		// Then, override styles so far with any block-level styles.
+		$block_level_data = $data['styles']['blocks'][ $block_type ]['variations'][ $variation_name ] ?? array();
+		if ( ! empty( $block_level_data ) ) {
+			$variation_data = array_replace_recursive( $variation_data, $block_level_data );
+		}
+
+		return $variation_data;
 	}
 }
